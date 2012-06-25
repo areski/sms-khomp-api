@@ -11,12 +11,21 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
+#
+# To download and run the script on your server :
+#
+# cd /usr/src/ ; wget --no-check-certificate https://raw.github.com/areski/sms-khomp-api/master/install/install.sh -O install.sh ; bash install.sh
+#
+
+
 INSTALL_MODE='CLONE'
 INSTALL_DIR='/usr/share/sms_khomp_api'
 INSTALL_ENV="sms-khomp-api"
 SRC_FREESWITCH='/usr/src/freeswitch/libs/esl'
 
+
 #Include general functions
+wget --no-check-certificate https://raw.github.com/areski/sms-khomp-api/master/install/bash-common-functions.sh -O bash-common-functions.sh
 source bash-common-functions.sh
 
 #Identify the OS
