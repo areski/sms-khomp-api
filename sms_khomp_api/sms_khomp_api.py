@@ -99,7 +99,7 @@ def sendsms():
                     abort(500, 'API Server not connected to FreeSWITCH')
             
             #Send SMS via ESL
-            ev = c.api("khomp", "sms %s %s '%s'" % (interface, recipient, message))
+            ev = handler_esl.con.api("khomp", "sms %s %s '%s'" % (interface, recipient, message))
             #ev = handler_esl.con.api("show channels")
             try:
                 result = ev.getBody()
