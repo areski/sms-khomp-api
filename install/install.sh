@@ -7,7 +7,7 @@
 #
 # Copyright (C) 2011-2012 Star2Billing S.L.
 # 
-# The Initial Developer of the Original Code is
+# The Initial Developer is
 # Arezqui Belaid <info@star2billing.com>
 #
 

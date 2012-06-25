@@ -4,6 +4,8 @@ SMS-KHOMP-API
 
 HTTP API Gateway for KHOMP SMS
 
+The Initial Developer is Arezqui Belaid <areski@gmail.com>
+
 
 Requirements
 ------------
@@ -35,11 +37,3 @@ Developer Website : http://www.star2billing.com
 
 Khomp Website : http://www.khomp.com.br
 
-
-Support 
--------
-
-Star2Billing S.L. (http://www.star2billing.com) offers consultancy including 
-installation, training and customization 
-
-Please email us at sales@star2billing.com for more information
