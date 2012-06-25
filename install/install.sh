@@ -150,6 +150,7 @@ func_install(){
     echo "Add service for sms-khomp-api server..."
     cp /usr/src/sms-khomp-api/install/init/sms-khomp-api /etc/init.d/sms-khomp-api
     chmod +x /etc/init.d/sms-khomp-api
+    chmod +x $INSTALL_DIR/sms_khomp_api.py
     case $DIST in
         'DEBIAN')
             #Add Service
