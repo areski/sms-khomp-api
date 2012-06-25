@@ -1,5 +1,5 @@
 
-sms-khomp-api
+SMS-KHOMP-API
 =============
 
 HTTP API Gateway for KHOMP SMS
