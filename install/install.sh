@@ -77,7 +77,7 @@ func_install(){
     echo "Install Dependencies and python modules..."
     case $DIST in
         'DEBIAN')
-            apt-get -y install python-setuptools python-dev build-essential libevent-dev libapache2-mod-python libapache2-mod-wsgi git-core mercurial gawk
+            apt-get -y install python-setuptools python-dev build-essential libevent-dev git-core mercurial gawk
             easy_install pip
         ;;
         'CENTOS')
@@ -148,7 +148,7 @@ func_install(){
     
     #add service for socketio server
     echo "Add service for sms-khomp-api server..."
-    cp /usr/src/sms-khomp-api/init/sms-khomp-api /etc/init.d/sms-khomp-api
+    cp /usr/src/sms-khomp-api/install/init/sms-khomp-api /etc/init.d/sms-khomp-api
     chmod +x /etc/init.d/sms-khomp-api
     case $DIST in
         'DEBIAN')
