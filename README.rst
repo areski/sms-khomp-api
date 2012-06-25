@@ -5,6 +5,16 @@ SMS-KHOMP-API
 HTTP API Gateway for KHOMP SMS
 
 
+Requirements
+------------
+
+This Application is build using Flask and Gevent :
+
+* Flask : http://flask.pocoo.org/
+
+* Gevent : http://www.gevent.org/
+
+
 Coding Conventions
 ------------------
 
