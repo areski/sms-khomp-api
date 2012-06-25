@@ -8,6 +8,7 @@ from gevent.wsgi import WSGIServer
 from flask import Flask, url_for, request, abort
 from time import sleep
 import ESL
+from singleton import singleton
 
 import os
 import sys
@@ -25,6 +26,24 @@ EVENTSOCKET_PORT = '8021'
 EVENTSOCKET_PASSWORD = 'ClueCon'
 
 
+@singleton
+class connectESL(object):
+    def __init__(self, host, port, password):
+        self.host = host
+        self.port = port
+        self.password = password
+        self.con = ESL.ESLconnection(self.host, self.port, self.password)
+
+    def spam_connection(self):
+        return self.con
+        
+    def reconnect(self):
+        self.con = ESL.ESLconnection(self.host, self.port, self.password)
+
+
+handler_esl = connectESL(EVENTSOCKET_HOST, EVENTSOCKET_PORT, EVENTSOCKET_PASSWORD)
+
+          
 app = Flask(__name__)
 
 #setup logger
@@ -32,7 +51,7 @@ logger = logging.getLogger("sms_khomp_api")
 logger.setLevel(logging.DEBUG)
 
 # create file handler which logs even debug messages
-fh = logging.FileHandler("sms_khomp_api.log")
+fh = logging.FileHandler("/var/log/sms-khomp-api/sms_khomp_api.log")
 fh.setLevel(logging.DEBUG)
 
 # create formatter and add it to the handlers
@@ -62,20 +81,33 @@ def documenation():
 def sendsms():
     if request.method == 'POST':
         if 'recipient' in request.form \
-            and 'message' in request.form:
+            and 'message' in request.form \
+            and 'interface' in request.form:
+            
+            if not request.form['interface'] or len(request.form['interface']) > 4:
+                interface = 'b0'
+            else:
+                interface = request.form['interface']
+                
+            recipient = request.form['recipient']
+            message = request.form['message']
+            
+            if not handler_esl.con.connected():
+                #Try to reconnect
+                handler_esl.reconnect()
+                if not handler_esl.con.connected():
+                    abort(500, 'API Server not connected to FreeSWITCH')
             
             #Send SMS via ESL
-            c = ESL.ESLconnection(EVENTSOCKET_HOST, EVENTSOCKET_PORT, EVENTSOCKET_PASSWORD)
-            #ev = c.api("khomp", "sms b0 885392 Test over ESL")
-            ev = c.api("api", "help")
-            print ev.serialize()
+            ev = c.api("khomp", "sms %s %s '%s'" % (interface, recipient, message))
+            #ev = handler_esl.con.api("show channels")
+            try:
+                result = ev.getBody()
+            except AttributeError:
+                abort(500, 'Error Sending SMS')    
             
-            from ESL import ESLconnection
-            con = ESLconnection("localhost", "8021", "ClueCon")
-            e = con.api("show channels")
-            return e.getBody()
-            
-            #return 'Received POST ==> Send SMS %s / %s' % (request.form['recipient'], request.form['message'])
+            return result
+            #return 'Received POST ==> Send SMS %s / %s / %s' % (request.form['recipient'], request.form['message'], request.form['interface'])
         else:
             abort(404, 'Missing parameters on POST')
     else:

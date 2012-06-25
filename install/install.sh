@@ -51,6 +51,7 @@ func_setup_virtualenv() {
     workon $INSTALL_ENV
     
     echo "Virtualenv $INSTALL_ENV created and activated"
+    read TEMP
 }
 
 
