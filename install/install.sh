@@ -14,6 +14,7 @@
 INSTALL_MODE='CLONE'
 INSTALL_DIR='/usr/share/sms_khomp_api'
 INSTALL_ENV="sms-khomp-api"
+SRC_FREESWITCH='/usr/src/freeswitch/libs/esl'
 
 #Include general functions
 source bash-common-functions.sh
@@ -124,6 +125,10 @@ func_install(){
     do
         pip install $line
     done
+    
+    #Install FreeSWITCH Python ESL
+    cd $SRC_FREESWITCH
+    make pymod-install
     
     cd $INSTALL_DIR/
     

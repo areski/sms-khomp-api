@@ -7,6 +7,7 @@ from gevent.event import Event
 from gevent.wsgi import WSGIServer
 from flask import Flask, url_for, request, abort
 from time import sleep
+import ESL
 
 import os
 import sys
@@ -17,6 +18,12 @@ from daemon import Daemon
 __version__ = 'v1.0'
 
 PORT = 5000
+
+#Event Socket
+EVENTSOCKET_HOST = '127.0.0.1'
+EVENTSOCKET_PORT = '8021'
+EVENTSOCKET_PASSWORD = 'ClueCon'
+
 
 app = Flask(__name__)
 
@@ -55,9 +62,20 @@ def documenation():
 def sendsms():
     if request.method == 'POST':
         if 'recipient' in request.form \
-            and 'sender' in request.form \
             and 'message' in request.form:
-            return 'Received POST ==> Send SMS %s / %s / %s' % (request.form['recipient'], request.form['sender'], request.form['message'])
+            
+            #Send SMS via ESL
+            c = ESL.ESLconnection(EVENTSOCKET_HOST, EVENTSOCKET_PORT, EVENTSOCKET_PASSWORD)
+            #ev = c.api("khomp", "sms b0 885392 Test over ESL")
+            ev = c.api("api", "help")
+            print ev.serialize()
+            
+            from ESL import ESLconnection
+            con = ESLconnection("localhost", "8021", "ClueCon")
+            e = con.api("show channels")
+            return e.getBody()
+            
+            #return 'Received POST ==> Send SMS %s / %s' % (request.form['recipient'], request.form['message'])
         else:
             abort(404, 'Missing parameters on POST')
     else:
