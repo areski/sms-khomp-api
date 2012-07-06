@@ -73,7 +73,14 @@ def index():
 
 @app.route("/documentation/")
 def documenation():
-    return "Documentation<br><br/>API : Send SMS - Url /v1.0/sendsms"
+    documentation = "<b>DOCUMENTATION</b><br>"\
+        "------------------------------<br/>"\
+        "<br/>Send SMS - Url <b>/v1.0/sendsms</b><br/><br/>"\
+        "Parameters :<br/>"\
+        " @ recipient : Phone Number of the person receving the SMS<br>"\
+        " @ message : Message content to be send on the SMS<br/>"\
+        " @ interface : Set the interface to use to send the SMS, default b0"
+    return documentation
 
 #@app.route('/v1.0/sendsms/<recipient>/<sender>/<message>')
 #def sendsms(recipient, sender, message):
