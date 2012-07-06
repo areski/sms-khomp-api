@@ -29,11 +29,11 @@ You will need to compile Python ESL, this can be achieved with the following com
 Coding Conventions
 ------------------
 
-This project is PEP8 compilant and please refer to these sources for the Coding 
+This project is PEP8 compilant and please refer to these sources for the Coding
 Conventions :
 
     - http://www.python.org/dev/peps/pep-0008/
-    
+
 
 Additional information
 -----------------------

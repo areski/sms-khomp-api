@@ -2,26 +2,25 @@
 # SMS-Khomp-API License
 # http://www.star2billing.com
 #
-# This Source Code Form is subject to the terms of the Mozilla Public 
+# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # Copyright (C) 2011-2012 Star2Billing S.L.
-# 
+#
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
 
-import os
 from setuptools import setup, find_packages
 from setuptools.dist import Distribution
 import pkg_resources
 import sys
-import re
-from cdr_stats import VERSION
 
+VERSION = '1.0'
 
 install_flag=False
+
 if sys.argv[1] == "install":
     install_flag = True
 
@@ -47,8 +46,8 @@ setup(
         'Programming Language :: Python, Javascript, HTML',
         'Topic :: Call Analytic Software'
     ],
-    zip_safe = False,
-    setup_requires = [
+    zip_safe=False,
+    setup_requires=[
         "Flask == 0.8",
         "gevent == 0.13.7",
     ],
