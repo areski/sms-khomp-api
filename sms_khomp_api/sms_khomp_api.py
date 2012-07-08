@@ -148,7 +148,6 @@ def documenation():
 @app.route('/v1.0/sendsms', methods=['POST'])
 def sendsms():
     if request.method == 'POST':
-        print request.form
         if 'recipient' in request.form \
             and 'message' in request.form \
             and 'interface' in request.form:
