@@ -15,6 +15,9 @@ import logging
 import optparse
 from daemon import Daemon
 
+import redis
+from random import randint
+
 __version__ = 'v1.0'
 
 PORT = 5000
@@ -23,6 +26,60 @@ PORT = 5000
 EVENTSOCKET_HOST = '127.0.0.1'
 EVENTSOCKET_PORT = '8021'
 EVENTSOCKET_PASSWORD = 'ClueCon'
+
+TESTDEBUG = True
+
+# +++++++++++++++++++++
+
+# List of interface of Khomp Card
+INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
+# Number of SIM cards on the Khomp Card
+N_SIM = 4
+#Expire Ressource / 300 seconds
+SIM_TTL = 300
+#Ressouce name
+RESNAME = 'interface'
+
+r_server = redis.Redis(host='localhost', port=6379)
+
+
+def interface_reserve():
+    """This function will try to find an interface we can use to send SMS
+    which hasn't been busy for the last SIM_TTL
+    it will select randomly an interface and then will increment to find
+    one that is available.
+    """
+    randinterf = randint(0, len(INTERFACE_LIST) - 1)
+    randsim = randint(1, N_SIM)
+    mkey = "%s-%s-%d" % (RESNAME,
+                        INTERFACE_LIST[randinterf],
+                        randsim)
+
+    for j in range(len(INTERFACE_LIST)):
+        nextinterf = (randinterf + j) % len(INTERFACE_LIST)
+        #print "Next interface to check %s" % INTERFACE_LIST[nextinterf]
+        for i in range(1, N_SIM + 1):
+            nextsim = (randsim + i) % N_SIM + 1
+            #print "Next Sim to check %d" % nextsim
+
+            mkey = "%s-%s-%d" % (RESNAME,
+                        INTERFACE_LIST[nextinterf],
+                        nextsim)
+            #print "Searching on the interface %s...\n" % mkey
+            if not r_server.get(mkey):
+                #reserve ressource
+                #print "Reserved Ressource (%s)" % mkey
+                r_server.set(mkey, 1)
+                r_server.expire(mkey, SIM_TTL)
+                return mkey
+            #else:
+                #Ressource busy
+                #print "Ressource Busy"
+    return False
+
+#reserve a ressource
+# rsd_int = interface_reserve()
+
 
 
 @singleton
@@ -91,6 +148,7 @@ def documenation():
 @app.route('/v1.0/sendsms', methods=['POST'])
 def sendsms():
     if request.method == 'POST':
+        print request.form
         if 'recipient' in request.form \
             and 'message' in request.form \
             and 'interface' in request.form:
@@ -104,27 +162,47 @@ def sendsms():
             recipient = request.form['recipient']
             message = request.form['message']
 
-            if not handler_esl.con.connected():
-                #Try to reconnect
-                handler_esl.reconnect()
-                if not handler_esl.con.connected():
-                    abort(500, 'API Server not connected to FreeSWITCH')
-
             #Send SMS via ESL
             command_string = "sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
-            ev = handler_esl.con.api("khomp", command_string)
-            #ev = handler_esl.con.api("show channels")
-            try:
-                result = ev.getBody()
-            except AttributeError:
-                abort(500, 'Error Sending SMS')
+            if (TESTDEBUG):
+                if not handler_esl.con.connected():
+                    #Try to reconnect
+                    handler_esl.reconnect()
+                    if not handler_esl.con.connected():
+                        abort(500, 'API Server not connected to FreeSWITCH')
+                ev = handler_esl.con.api("show channels")
+                sleep(1)
+                try:
+                    result = ev.getBody()
+                except AttributeError:
+                    abort(500, 'Error Sending SMS')
+                return result
+            else:
+                if not handler_esl.con.connected():
+                    #Try to reconnect
+                    handler_esl.reconnect()
+                    if not handler_esl.con.connected():
+                        abort(500, 'API Server not connected to FreeSWITCH')
 
-            return result
+                ev = handler_esl.con.api("khomp", command_string)
+                #ev = handler_esl.con.api("show channels")
+                try:
+                    result = ev.getBody()
+                except AttributeError:
+                    abort(500, 'Error Sending SMS')
+                return result
+
             #return 'Received POST ==> Send SMS %s / %s / %s' % \
             #        (request.form['recipient'], request.form['message'],
             #        request.form['interface'])
         else:
+            if not 'recipient' in request.form:
+                abort(404, 'Missing parameter "recipient" on POST')
+            if not 'message' in request.form:
+                abort(404, 'Missing parameter "message" on POST')
+            if not 'interface' in request.form:
+                abort(404, 'Missing parameter "interface" on POST')
             abort(404, 'Missing parameters on POST')
     else:
         return 'Send recipient, sender and message via POST'
