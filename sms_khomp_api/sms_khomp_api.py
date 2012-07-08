@@ -29,8 +29,6 @@ EVENTSOCKET_PASSWORD = 'ClueCon'
 
 TESTDEBUG = True
 
-# +++++++++++++++++++++
-
 # List of interface of Khomp Card
 INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
 # Number of SIM cards on the Khomp Card
@@ -76,9 +74,6 @@ def interface_reserve():
                 #Ressource busy
                 #print "Ressource Busy"
     return False
-
-#reserve a ressource
-# rsd_int = interface_reserve()
 
 
 
@@ -165,6 +160,21 @@ def sendsms():
             command_string = "sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
             if (TESTDEBUG):
+                #reserve a ressource
+                rsd_int = interface_reserve()
+                if not rsd_int:
+                    #TODO: Check 500 code, replace something for throtle
+                    abort(500, 'Ressource unvailable throtle')
+                print "Ressource is being used %s" % (rsd_int)
+                sleep(10)
+                #Send SMS Via Khomp FreeSWITCH API
+                #...
+
+                #Free ressource
+                r_server.delete(rsd_int)
+                return "Sent Fake SMS - Success"
+
+            elif (TESTDEBUG and False):
                 if not handler_esl.con.connected():
                     #Try to reconnect
                     handler_esl.reconnect()

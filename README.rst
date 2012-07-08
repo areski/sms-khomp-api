@@ -53,8 +53,7 @@ Use ab, the Apache HTTP server benchmarking tool
 
 Usage::
 
-    ab -p test/post.txt -T application/x-www-form-urlencoded http://0.0.0.0:5000/v1.0/sendsms
-
+    ab -c 100 -n 1000 -p test/post.txt -T application/x-www-form-urlencoded http://0.0.0.0:5000/v1.0/sendsms
 
 
 Coding Conventions
