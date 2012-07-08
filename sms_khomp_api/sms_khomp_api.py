@@ -171,7 +171,7 @@ def sendsms():
                     #TODO: Check 500 code, replace something for throttle
                     abort(500, 'Ressource unvailable throttle')
                 print "Ressource is being used %s" % (rsd_int)
-                sleep(10)
+                sleep(0.001)
                 #Send SMS Via Khomp FreeSWITCH API
                 #...
 
@@ -186,7 +186,7 @@ def sendsms():
                     if not handler_esl.con.connected():
                         abort(500, 'API Server not connected to FreeSWITCH')
                 ev = handler_esl.con.api("show channels")
-                sleep(1)
+                sleep(10)
                 try:
                     result = ev.getBody()
                 except AttributeError:
