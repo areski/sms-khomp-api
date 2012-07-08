@@ -30,13 +30,14 @@ EVENTSOCKET_PASSWORD = 'ClueCon'
 TESTDEBUG = True
 
 # List of interface of Khomp Card
-INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
+#INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
+INTERFACE_LIST = ['b0']
 # Number of SIM cards on the Khomp Card
 N_SIM = 4
 #Expire Ressource / 300 seconds
 SIM_TTL = 300
 #Ressouce name
-RESNAME = 'interface'
+RESNAME = 'interface-4'
 
 r_server = redis.Redis(host='localhost', port=6379)
 
@@ -76,6 +77,10 @@ def interface_reserve():
     return False
 
 
+# for k in range(1,10):
+#     res_interface = interface_reserve()
+#     print res_interface
+# sys.exit()
 
 @singleton
 class connectESL(object):
