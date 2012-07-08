@@ -1,0 +1,1 @@
+recipient=650234300&message=Hello and welcome to my world!&interface=b0
