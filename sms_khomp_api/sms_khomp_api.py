@@ -17,6 +17,7 @@ from daemon import Daemon
 
 import redis
 from random import randint
+from uuid import uuid1
 
 __version__ = 'v1.0'
 
@@ -37,48 +38,57 @@ N_SIM = 4
 #Expire Ressource / 300 seconds
 SIM_TTL = 300
 #Ressouce name
-RESNAME = 'interface-4'
+RESNAME = 'interface'
 
 r_server = redis.Redis(host='localhost', port=6379)
 
 
-def interface_reserve():
+def interface_reserve(sinterface=None):
     """This function will try to find an interface we can use to send SMS
     which hasn't been busy for the last SIM_TTL
     it will select randomly an interface and then will increment to find
     one that is available.
     """
-    randinterf = randint(0, len(INTERFACE_LIST) - 1)
+    #Get Random SIM
     randsim = randint(1, N_SIM)
-    mkey = "%s-%s-%d" % (RESNAME,
-                        INTERFACE_LIST[randinterf],
-                        randsim)
 
-    for j in range(len(INTERFACE_LIST)):
-        nextinterf = (randinterf + j) % len(INTERFACE_LIST)
-        #print "Next interface to check %s" % INTERFACE_LIST[nextinterf]
+    if sinterface:
+        #Search on a Specific Interface
         for i in range(1, N_SIM + 1):
             nextsim = (randsim + i) % N_SIM + 1
-            #print "Next Sim to check %d" % nextsim
-
             mkey = "%s-%s-%d" % (RESNAME,
-                        INTERFACE_LIST[nextinterf],
+                        sinterface,
                         nextsim)
-            #print "Searching on the interface %s...\n" % mkey
             if not r_server.get(mkey):
-                #reserve ressource
-                #print "Reserved Ressource (%s)" % mkey
+                #Reserve ressource
                 r_server.set(mkey, 1)
                 r_server.expire(mkey, SIM_TTL)
-                return mkey
-            #else:
-                #Ressource busy
-                #print "Ressource Busy"
+                return sinterface
+    else:
+        #Get random interface
+        randinterf = randint(0, len(INTERFACE_LIST) - 1)
+
+        for j in range(len(INTERFACE_LIST)):
+            nextinterf = (randinterf + j) % len(INTERFACE_LIST)
+            for i in range(1, N_SIM + 1):
+                nextsim = (randsim + i) % N_SIM + 1
+                mkey = "%s-%s-%d" % (RESNAME,
+                            INTERFACE_LIST[nextinterf],
+                            nextsim)
+                if not r_server.get(mkey):
+                    #reserve ressource
+                    r_server.set(mkey, 1)
+                    r_server.expire(mkey, SIM_TTL)
+                    return INTERFACE_LIST[nextinterf]
+                #else:
+                    #Ressource busy
+                    #print "Ressource Busy"
     return False
 
 
-# for k in range(1,10):
+# for k in range(1, 20):
 #     res_interface = interface_reserve()
+#     #res_interface = interface_reserve('b0')
 #     print res_interface
 # sys.exit()
 
@@ -149,62 +159,68 @@ def documenation():
 def sendsms():
     if request.method == 'POST':
         if 'recipient' in request.form \
-            and 'message' in request.form \
-            and 'interface' in request.form:
+            and 'message' in request.form:
 
-            if not request.form['interface'] \
-                or len(request.form['interface']) > 4:
-                interface = 'b0'
-            else:
+            if 'interface' in request.form \
+                and len(request.form['interface']) > 4:
+                #Get interface
                 interface = request.form['interface']
+            else:
+                interface = None
 
             recipient = request.form['recipient']
             message = request.form['message']
 
-            #Send SMS via ESL
-            command_string = "sms %s %s '%s'" % \
-                                (str(interface), str(recipient), str(message))
             if (TESTDEBUG):
                 #reserve a ressource
-                rsd_int = interface_reserve()
+                rsd_int = interface_reserve(interface)
                 if not rsd_int:
                     #TODO: Check 500 code, replace something for throttle
-                    abort(500, 'Ressource unvailable throttle')
+                    abort(500, 'ERR: Ressource unvailable throttle')
                 print "Ressource is being used %s" % (rsd_int)
                 sleep(0.001)
+
+                #Prepare SMS command
+                command_string = "sms %s %s '%s'" % \
+                                (str(interface), str(recipient), str(message))
+
                 #Send SMS Via Khomp FreeSWITCH API
                 #...
 
                 #Free ressource
                 r_server.delete(rsd_int)
-                return "Sent Fake SMS - Success"
+                return "ID: %s Mock SMS Success 200" % str(uuid1())
 
             elif (TESTDEBUG and False):
                 if not handler_esl.con.connected():
                     #Try to reconnect
                     handler_esl.reconnect()
                     if not handler_esl.con.connected():
-                        abort(500, 'API Server not connected to FreeSWITCH')
+                        abort(500, 'ERR: API Server not connected to FreeSWITCH')
                 ev = handler_esl.con.api("show channels")
                 sleep(10)
                 try:
                     result = ev.getBody()
                 except AttributeError:
-                    abort(500, 'Error Sending SMS')
+                    abort(500, 'ERR: Error Sending SMS')
                 return result
             else:
                 #reserve a ressource
-                rsd_int = interface_reserve()
+                rsd_int = interface_reserve(interface)
                 if not rsd_int:
                     #TODO: Check 500 code, replace something for throttle
-                    abort(500, 'Ressource unvailable throttle')
+                    abort(500, 'ERR: Ressource unvailable throttle')
                 #print "Ressource is being used %s" % (rsd_int)
 
                 if not handler_esl.con.connected():
                     #Try to reconnect
                     handler_esl.reconnect()
                     if not handler_esl.con.connected():
-                        abort(500, 'API Server not connected to FreeSWITCH')
+                        abort(500, 'ERR: API Server not connected to FreeSWITCH')
+
+                #Prepare SMS command
+                command_string = "sms %s %s '%s'" % \
+                                (str(interface), str(recipient), str(message))
 
                 #Send SMS via Khomp API
                 ev = handler_esl.con.api("khomp", command_string)
@@ -216,22 +232,25 @@ def sendsms():
                     #Retrieve result
                     result = ev.getBody()
                 except AttributeError:
-                    abort(500, 'Error Sending SMS')
-                return result
+                    abort(500, 'ERR: Error Sending SMS')
+
+                #TODO: Parse result code
+
+                return "ID: %s Sent SMS Success 200" % str(uuid1())
 
             #return 'Received POST ==> Send SMS %s / %s / %s' % \
             #        (request.form['recipient'], request.form['message'],
             #        request.form['interface'])
         else:
             if not 'recipient' in request.form:
-                abort(404, 'Missing parameter "recipient" on POST')
+                abort(404, 'ERR: Missing parameter "recipient" on POST')
             if not 'message' in request.form:
-                abort(404, 'Missing parameter "message" on POST')
+                abort(404, 'ERR: Missing parameter "message" on POST')
             if not 'interface' in request.form:
-                abort(404, 'Missing parameter "interface" on POST')
-            abort(404, 'Missing parameters on POST')
+                abort(404, 'ERR: Missing parameter "interface" on POST')
+            abort(404, 'ERR: Missing parameters on POST')
     else:
-        return 'Send recipient, sender and message via POST'
+        return 'OK: Send recipient, sender and message via POST'
 
 
 class StdErrWrapper:
