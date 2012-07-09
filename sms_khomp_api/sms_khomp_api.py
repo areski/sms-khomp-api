@@ -6,6 +6,7 @@ monkey.patch_all()
 from gevent.event import Event
 from gevent.wsgi import WSGIServer
 from flask import Flask, request, abort
+from werkzeug.utils import escape
 from time import sleep
 import ESL
 from singleton import singleton
@@ -14,6 +15,7 @@ import sys
 import logging
 import optparse
 from daemon import Daemon
+from werkzeug.exceptions import BadRequest, InternalServerError
 
 import redis
 from random import randint
@@ -63,7 +65,7 @@ def interface_reserve(sinterface=None):
                 #Reserve ressource
                 r_server.set(mkey, 1)
                 r_server.expire(mkey, SIM_TTL)
-                return sinterface
+                return mkey
     else:
         #Get random interface
         randinterf = randint(0, len(INTERFACE_LIST) - 1)
@@ -79,7 +81,7 @@ def interface_reserve(sinterface=None):
                     #reserve ressource
                     r_server.set(mkey, 1)
                     r_server.expire(mkey, SIM_TTL)
-                    return INTERFACE_LIST[nextinterf]
+                    return mkey
                 #else:
                     #Ressource busy
                     #print "Ressource Busy"
@@ -130,6 +132,32 @@ fh.setFormatter(formatter)
 
 # add the handlers to the logger
 logger.addHandler(fh)
+
+
+# see https://github.com/mitsuhiko/werkzeug/blob/master/werkzeug/exceptions.py
+class MyBadRequest(BadRequest):
+    def get_body(self, environ):
+        return (
+            'ERR: %(name)s %(description)s %(code)s'
+        ) % {
+            'code':         self.code,
+            'name':         escape(self.name),
+            'description':  self.get_description(environ)
+        }
+
+
+class MyInternalServerError(InternalServerError):
+    def get_body(self, environ):
+        return (
+            'ERR: %(name)s %(description)s %(code)s'
+        ) % {
+            'code':         self.code,
+            'name':         escape(self.name),
+            'description':  self.get_description(environ)
+        }
+
+abort.mapping.update({400: MyBadRequest})
+abort.mapping.update({500: MyInternalServerError})
 
 
 #Add Flask Routes
@@ -196,7 +224,7 @@ def sendsms():
                     #Try to reconnect
                     handler_esl.reconnect()
                     if not handler_esl.con.connected():
-                        abort(500, 'ERR: API Server not connected to FreeSWITCH')
+                        abort(500, 'ERR: Cannot connect to FreeSWITCH')
                 ev = handler_esl.con.api("show channels")
                 sleep(10)
                 try:
@@ -216,7 +244,7 @@ def sendsms():
                     #Try to reconnect
                     handler_esl.reconnect()
                     if not handler_esl.con.connected():
-                        abort(500, 'ERR: API Server not connected to FreeSWITCH')
+                        abort(500, 'ERR: Cannot connect to FreeSWITCH')
 
                 #Prepare SMS command
                 command_string = "sms %s %s '%s'" % \
