@@ -206,11 +206,13 @@ def sendsms():
                     #TODO: Check 500 code, replace something for throttle
                     abort(500, 'ERR: Ressource unvailable throttle')
                 print "Ressource is being used %s" % (rsd_int)
+                logger.info("Ressource is being used %s" % (rsd_int))
                 sleep(0.001)
 
                 #Prepare SMS command
                 command_string = "sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
+                logger.info(command_string)
 
                 #Send SMS Via Khomp FreeSWITCH API
                 #...
@@ -237,6 +239,7 @@ def sendsms():
                 rsd_int = interface_reserve(interface)
                 if not rsd_int:
                     #TODO: Check 500 code, replace something for throttle
+                    logger.error("ERR: Ressource unvailable throttle")
                     abort(500, 'ERR: Ressource unvailable throttle')
                 #print "Ressource is being used %s" % (rsd_int)
 
@@ -249,6 +252,7 @@ def sendsms():
                 #Prepare SMS command
                 command_string = "sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
+                logger.info(command_string)
 
                 #Send SMS via Khomp API
                 ev = handler_esl.con.api("khomp", command_string)
@@ -259,6 +263,7 @@ def sendsms():
                 try:
                     #Retrieve result
                     result = ev.getBody()
+                    logger.info(result)
                 except AttributeError:
                     abort(500, 'ERR: Error Sending SMS')
 
