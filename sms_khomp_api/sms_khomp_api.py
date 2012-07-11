@@ -260,7 +260,7 @@ def sendsms():
                     abort(500, 'ID: %s (Internal Error Get Result) 501')
 
                 #Parse result code
-                if result.find('+ OK') > 0:
+                if result.find('OK') > 0:
                     return "ID: %s (Success) 200" % str(uuid1())
                 else:
                     try:
