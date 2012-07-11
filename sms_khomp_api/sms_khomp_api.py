@@ -205,8 +205,10 @@ def sendsms():
                 if not rsd_int:
                     #TODO: Check 500 code, replace something for throttle
                     abort(500, 'ERR: Ressource unvailable throttle')
-                print "Ressource is being used %s" % (rsd_int)
-                logger.info("Ressource is being used %s" % (rsd_int))
+
+                interface = rsd_int.split('-')[1]
+                logger.info("Ressource is being used %s - %s" % \
+                    (rsd_int, interface))
                 sleep(0.001)
 
                 #Prepare SMS command
@@ -241,7 +243,10 @@ def sendsms():
                     #TODO: Check 500 code, replace something for throttle
                     logger.error("ERR: Ressource unvailable throttle")
                     abort(500, 'ERR: Ressource unvailable throttle')
-                #print "Ressource is being used %s" % (rsd_int)
+
+                interface = rsd_int.split('-')[1]
+                logger.info("Ressource is being used %s - %s" % \
+                    (rsd_int, interface))
 
                 if not handler_esl.con.connected():
                     #Try to reconnect
