@@ -30,7 +30,7 @@ EVENTSOCKET_HOST = '127.0.0.1'
 EVENTSOCKET_PORT = '8021'
 EVENTSOCKET_PASSWORD = 'ClueCon'
 
-TESTDEBUG = True
+TESTDEBUG = False
 
 # List of interface of Khomp Card
 #INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
@@ -250,7 +250,7 @@ def sendsms():
                         abort(500, 'ERR: Cannot connect to FreeSWITCH')
 
                 #Prepare SMS command
-                command_string = "sms %s %s '%s'" % \
+                command_string = "concise sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
                 logger.info(command_string)
 
@@ -265,7 +265,7 @@ def sendsms():
                     result = ev.getBody()
                     logger.info(result)
                 except AttributeError:
-                    abort(500, 'ERR: Error Sending SMS')
+                    abort(500, '- ERR: Internal Error Get Result')
 
                 #TODO: Parse result code
 
