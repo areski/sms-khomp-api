@@ -191,7 +191,7 @@ def sendsms():
             and 'message' in request.form:
 
             if 'interface' in request.form \
-                and len(request.form['interface']) > 4:
+                and len(request.form['interface']) > 1:
                 #Get interface
                 interface = request.form['interface']
             else:
@@ -223,20 +223,6 @@ def sendsms():
                 #Free ressource
                 r_server.delete(rsd_int)
                 return "ID: %s Mock SMS Success 200" % str(uuid1())
-
-            elif (TESTDEBUG and False):
-                if not handler_esl.con.connected():
-                    #Try to reconnect
-                    handler_esl.reconnect()
-                    if not handler_esl.con.connected():
-                        abort(500, 'ERR: Cannot connect to FreeSWITCH')
-                ev = handler_esl.con.api("show channels")
-                sleep(10)
-                try:
-                    result = ev.getBody()
-                except AttributeError:
-                    abort(500, 'ERR: Error Sending SMS')
-                return result
             else:
                 #reserve a ressource
                 rsd_int = interface_reserve(interface)
