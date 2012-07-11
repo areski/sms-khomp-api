@@ -264,7 +264,7 @@ def sendsms():
                     return "ID: %s (Success) 200" % str(uuid1())
                 else:
                     try:
-                        m = re.search('\d+', result)
+                        m = re.search('-*\d+', result)
                         err_code = m.group(0)
                     except:
                         err_code = '502'
