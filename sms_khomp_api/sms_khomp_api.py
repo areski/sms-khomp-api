@@ -20,6 +20,7 @@ from werkzeug.exceptions import BadRequest, InternalServerError
 import redis
 from random import randint
 from uuid import uuid1
+import re
 
 __version__ = 'v1.0'
 
@@ -270,11 +271,26 @@ def sendsms():
                     result = ev.getBody()
                     logger.info(result)
                 except AttributeError:
-                    abort(500, '- ERR: Internal Error Get Result')
+                    abort(500, 'ID: %s (Internal Error Get Result) 501')
 
-                #TODO: Parse result code
-
-                return "ID: %s Sent SMS Success 200" % str(uuid1())
+                #Parse result code
+                if result.find('+ OK') > 0:
+                    return "ID: %s (Success) 200" % str(uuid1())
+                else:
+                    try:
+                        m = re.search('\d+', result)
+                        err_code = m.group(0)
+                    except:
+                        err_code = '502'
+                    try:
+                        m = re.search('\(.+\)', result)
+                        err_message = m.group(0)
+                    except:
+                        err_message = '(Internal Error Parse Err)'
+                    return "ID: %s %s %s" % (
+                                str(uuid1()),
+                                err_message,
+                                err_code)
 
             #return 'Received POST ==> Send SMS %s / %s / %s' % \
             #        (request.form['recipient'], request.form['message'],
