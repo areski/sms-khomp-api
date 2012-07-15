@@ -21,6 +21,7 @@ import redis
 from random import randint
 from uuid import uuid1
 import re
+import subprocess
 
 __version__ = 'v1.0'
 
@@ -41,7 +42,7 @@ N_SIM = 4
 #Expire Ressource / 300 seconds
 SIM_TTL = 300
 #Ressouce name
-RESNAME = 'interface'
+RESNAME = 'interface1'
 
 r_server = redis.Redis(host='localhost', port=6379)
 
@@ -234,29 +235,45 @@ def sendsms():
                 logger.info("Ressource is being used %s - %s" % \
                     (rsd_int, interface))
 
-                if not handler_esl.con.connected():
-                    #Try to reconnect
-                    handler_esl.reconnect()
-                    if not handler_esl.con.connected():
-                        abort(500, 'ERR: Cannot connect to FreeSWITCH')
+                # if not handler_esl.con.connected():
+                #     #Try to reconnect
+                #     handler_esl.reconnect()
+                #     if not handler_esl.con.connected():
+                #         abort(500, 'ERR: Cannot connect to FreeSWITCH')
 
                 #Prepare SMS command
                 command_string = "concise sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
-                logger.info(command_string)
 
-                #Send SMS via Khomp API
-                ev = handler_esl.con.api("khomp", command_string)
+                cmd = "\"khomp %s\"" % command_string
+                logger.info(cmd)
+                print "shit1"
+                return "ID: %s (Success) 200" % str(uuid1())
+                s = subprocess.Popen(['fs_cli', '-x', cmd],
+                        stdout=subprocess.PIPE)
+                print "shit2"
+                output = ''
+                while True:
+                    line = s.stdout.readline()
+                    if not line:
+                        break
+                    output = output + line
+                print "output ::> "
+                print output
+
+                # try:
+                #     #Send SMS via Khomp API
+                #     ev = handler_esl.con.api("khomp", command_string)
+                #     #Retrieve result
+                #     result = ev.getBody()
+                #     logger.info(result)
+                # except AttributeError:
+                #     #Free ressource
+                #     r_server.delete(rsd_int)
+                #     abort(500, 'ID: %s (Internal Error Get Result) 501')
 
                 #Free ressource
                 r_server.delete(rsd_int)
-
-                try:
-                    #Retrieve result
-                    result = ev.getBody()
-                    logger.info(result)
-                except AttributeError:
-                    abort(500, 'ID: %s (Internal Error Get Result) 501')
 
                 #Parse result code
                 if result.find('OK') > 0:
