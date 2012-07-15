@@ -109,7 +109,6 @@ class connectESL(object):
     def reconnect(self):
         self.con = ESL.ESLconnection(self.host, self.port, self.password)
 
-
 handler_esl = connectESL(
                     EVENTSOCKET_HOST,
                     EVENTSOCKET_PORT,
