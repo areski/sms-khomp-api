@@ -34,8 +34,8 @@ EVENTSOCKET_PASSWORD = 'ClueCon'
 TESTDEBUG = False
 
 # List of interface of Khomp Card
-INTERFACE_LIST = ['b0', 'b1', 'b2', 'b3']
-#INTERFACE_LIST = ['b0']
+#INTERFACE_LIST = ['*b0', '*b1', '*b2', '*b3']
+INTERFACE_LIST = ['*b0']
 # Number of SIM cards on the Khomp Card
 N_SIM = 4
 #Expire Ressource / 300 seconds
