@@ -21,7 +21,6 @@ import redis
 from random import randint
 from uuid import uuid1
 import re
-import subprocess
 
 __version__ = 'v1.0'
 
@@ -235,42 +234,46 @@ def sendsms():
                 logger.info("Ressource is being used %s - %s" % \
                     (rsd_int, interface))
 
-                # if not handler_esl.con.connected():
-                #     #Try to reconnect
-                #     handler_esl.reconnect()
-                #     if not handler_esl.con.connected():
-                #         abort(500, 'ERR: Cannot connect to FreeSWITCH')
+                if not handler_esl.con.connected():
+                    #Try to reconnect
+                    handler_esl.reconnect()
+                    if not handler_esl.con.connected():
+                        abort(500, 'ERR: Cannot connect to FreeSWITCH')
 
                 #Prepare SMS command
                 command_string = "concise sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
 
-                cmd = "\"khomp %s\"" % command_string
-                logger.info(cmd)
-                print "shit1"
-                return "ID: %s (Success) 200" % str(uuid1())
-                s = subprocess.Popen(['fs_cli', '-x', cmd],
-                        stdout=subprocess.PIPE)
-                print "shit2"
-                output = ''
-                while True:
-                    line = s.stdout.readline()
-                    if not line:
-                        break
-                    output = output + line
-                print "output ::> "
-                print output
+                #Test command
+                # if False:
+                #     import subprocess
+                #     cmd = "\"khomp %s\"" % command_string
+                #     cmd = "show channels"
+                #     logger.info(cmd)
+                #     print "shit1"
+                #     return "ID: %s (Success) 200" % str(uuid1())
+                #     s = subprocess.Popen(['fs_cli', '-x', cmd],
+                #             stdout=subprocess.PIPE)
+                #     print "shit2"
+                #     output = ''
+                #     while True:
+                #         line = s.stdout.readline()
+                #         if not line:
+                #             break
+                #         output = output + line
+                #     print "output ::> "
+                #     print output
 
-                # try:
-                #     #Send SMS via Khomp API
-                #     ev = handler_esl.con.api("khomp", command_string)
-                #     #Retrieve result
-                #     result = ev.getBody()
-                #     logger.info(result)
-                # except AttributeError:
-                #     #Free ressource
-                #     r_server.delete(rsd_int)
-                #     abort(500, 'ID: %s (Internal Error Get Result) 501')
+                try:
+                    #Send SMS via Khomp API
+                    ev = handler_esl.con.api("khomp", command_string)
+                    #Retrieve result
+                    result = ev.getBody()
+                    logger.info(result)
+                except AttributeError:
+                    #Free ressource
+                    r_server.delete(rsd_int)
+                    abort(500, 'ID: %s (Internal Error Get Result) 501')
 
                 #Free ressource
                 r_server.delete(rsd_int)
