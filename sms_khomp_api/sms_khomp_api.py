@@ -244,26 +244,6 @@ def sendsms():
                 command_string = "concise sms %s %s '%s'" % \
                                 (str(interface), str(recipient), str(message))
 
-                #Test command
-                # if False:
-                #     import subprocess
-                #     cmd = "\"khomp %s\"" % command_string
-                #     cmd = "show channels"
-                #     logger.info(cmd)
-                #     print "shit1"
-                #     return "ID: %s (Success) 200" % str(uuid1())
-                #     s = subprocess.Popen(['fs_cli', '-x', cmd],
-                #             stdout=subprocess.PIPE)
-                #     print "shit2"
-                #     output = ''
-                #     while True:
-                #         line = s.stdout.readline()
-                #         if not line:
-                #             break
-                #         output = output + line
-                #     print "output ::> "
-                #     print output
-
                 try:
                     #Send SMS via Khomp API
                     ev = handler_esl.con.api("khomp", command_string)
