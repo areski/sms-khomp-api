@@ -45,6 +45,10 @@ Test with CURL::
 
     curl --dump-header -X POST --data 'recipient=650234300&message="Hello and welcome to my world!&interface=b0' http://0.0.0.0:5000/v1.0/sendsms
 
+    or without interface,
+
+    curl --dump-header -X POST --data 'recipient=650234300&message="Hello' http://0.0.0.0:5000/v1.0/sendsms
+
 
 Stress Test
 -----------
