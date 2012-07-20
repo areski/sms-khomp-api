@@ -39,9 +39,9 @@ INTERFACE_LIST = ['*b0']
 # Number of SIM cards on the Khomp Card
 N_SIM = 4
 #Expire Ressource / 300 seconds
-SIM_TTL = 300
+SIM_TTL = 10
 #Ressouce name
-RESNAME = 'interface1'
+RESNAME = 'interface'
 
 r_server = redis.Redis(host='localhost', port=6379)
 
