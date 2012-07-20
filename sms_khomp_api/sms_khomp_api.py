@@ -238,6 +238,7 @@ def sendsms():
                     #Try to reconnect
                     handler_esl.reconnect()
                     if not handler_esl.con.connected():
+                        r_server.delete(rsd_int)
                         abort(500, 'ERR: Cannot connect to FreeSWITCH')
 
                 #Prepare SMS command
