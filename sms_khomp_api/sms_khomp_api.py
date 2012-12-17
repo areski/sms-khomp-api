@@ -110,9 +110,9 @@ class connectESL(object):
         self.con = ESL.ESLconnection(self.host, self.port, self.password)
 
 handler_esl = connectESL(
-                    EVENTSOCKET_HOST,
-                    EVENTSOCKET_PORT,
-                    EVENTSOCKET_PASSWORD)
+    EVENTSOCKET_HOST,
+    EVENTSOCKET_PORT,
+    EVENTSOCKET_PASSWORD)
 
 app = Flask(__name__)
 
@@ -125,9 +125,8 @@ fh = logging.FileHandler("/var/log/sms-khomp-api/sms_khomp_api.log")
 fh.setLevel(logging.DEBUG)
 
 # create formatter and add it to the handlers
-formatter = logging.Formatter("%(asctime)s [%(levelname)s] "\
-                                "%(name)s\t%(message)s",
-                                datefmt="%Y-%m-%d %H:%M:%S")
+formatter = logging.Formatter("%(asctime)s [%(levelname)s] "
+    "%(name)s\t%(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 fh.setFormatter(formatter)
 
 # add the handlers to the logger
@@ -140,9 +139,9 @@ class MyBadRequest(BadRequest):
         return (
             'ERR: %(name)s %(description)s %(code)s'
         ) % {
-            'code':         self.code,
-            'name':         escape(self.name),
-            'description':  self.get_description(environ)
+            'code': self.code,
+            'name': escape(self.name),
+            'description': self.get_description(environ)
         }
 
 
@@ -151,9 +150,9 @@ class MyInternalServerError(InternalServerError):
         return (
             'ERR: %(name)s %(description)s %(code)s'
         ) % {
-            'code':         self.code,
-            'name':         escape(self.name),
-            'description':  self.get_description(environ)
+            'code': self.code,
+            'name': escape(self.name),
+            'description': self.get_description(environ)
         }
 
 abort.mapping.update({400: MyBadRequest})
@@ -187,10 +186,10 @@ def documenation():
 def sendsms():
     if request.method == 'POST':
         if 'recipient' in request.form \
-            and 'message' in request.form:
+           and 'message' in request.form:
 
             if 'interface' in request.form \
-                and len(request.form['interface']) > 1:
+               and len(request.form['interface']) > 1:
                 #Get interface
                 interface = request.form['interface']
             else:
@@ -207,13 +206,13 @@ def sendsms():
                     abort(500, 'ERR: Ressource unvailable throttle')
 
                 interface = rsd_int.split('-')[1]
-                logger.info("Ressource is being used %s - %s" % \
+                logger.info("Ressource is being used %s - %s" %
                     (rsd_int, interface))
                 sleep(0.001)
 
                 #Prepare SMS command
                 command_string = "sms %s %s '%s'" % \
-                                (str(interface), str(recipient), str(message))
+                    (str(interface), str(recipient), str(message))
                 logger.info(command_string)
 
                 #Send SMS Via Khomp FreeSWITCH API
@@ -231,7 +230,7 @@ def sendsms():
                     abort(500, 'ERR: Ressource unvailable throttle')
 
                 interface = rsd_int.split('-')[1]
-                logger.info("Ressource is being used %s - %s" % \
+                logger.info("Ressource is being used %s - %s" %
                     (rsd_int, interface))
 
                 if not handler_esl.con.connected():
@@ -243,7 +242,7 @@ def sendsms():
 
                 #Prepare SMS command
                 command_string = "concise sms %s %s '%s'" % \
-                                (str(interface), str(recipient), str(message))
+                    (str(interface), str(recipient), str(message))
 
                 try:
                     #Send SMS via Khomp API
@@ -274,9 +273,9 @@ def sendsms():
                     except:
                         err_message = '(Internal Error Parse Err)'
                     return "ID: %s %s %s" % (
-                                str(uuid1()),
-                                err_message,
-                                err_code)
+                        str(uuid1()),
+                        err_message,
+                        err_code)
 
             #return 'Received POST ==> Send SMS %s / %s / %s' % \
             #        (request.form['recipient'], request.form['message'],
@@ -331,8 +330,8 @@ if __name__ == "__main__":
         daemon = MyDaemon(options.pid)
 
         if len(args) != 1:
-            parser.error("Missing parameters : "\
-                            "sms_khomp_api.py -d start|stop|restart")
+            parser.error("Missing parameters : "
+                "sms_khomp_api.py -d start|stop|restart")
 
         if "start" == args[0]:
             daemon.start()
